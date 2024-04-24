@@ -11,6 +11,8 @@ class Unisat_provider {
             reject: (arg: any) => any;
         }
     >();
+    private _eventCallback: { [key: string]: Function[] } = {};
+
     constructor() {
         // this.channel.postMessage()
     }
@@ -61,6 +63,15 @@ class Unisat_provider {
         } else {
             console.log('no callback found for id', id)
         }
+    }
+
+    sendAccountChangeEvent = (accounts: string) => {
+        accounts = JSON.parse(accounts);
+        this._eventCallback['accountsChanged'].forEach(cb => cb(accounts));
+    }
+
+    sendNetworkChangeEvent = (network: string) => {
+        this._eventCallback['networkChanged'].forEach(cb => cb(network));
     }
 
     // public methods
@@ -240,6 +251,17 @@ class Unisat_provider {
             }
         });
     };
+
+    on = (event: string, cb: Function) => {
+        if (!this._eventCallback[event]) {
+            this._eventCallback[event] = [];
+        }
+        this._eventCallback[event].push(cb);
+    }
+
+    removeListener = (event: string, cb: Function) => {
+        this._eventCallback[event] = this._eventCallback[event].filter(c => c !== cb);
+    }
 }
 
 export default Unisat_provider;
